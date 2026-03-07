@@ -1,7 +1,6 @@
 #include <iostream>
-#include <unordered_map>
-#include <vector>
 #include <string>
+#include <vector>
 
 
 struct ListNode
@@ -12,14 +11,22 @@ struct ListNode
     std::string data; // произвольные пользовательские данные
 };
 
+using NodeWithRandomPosition = std::pair<ListNode*, int>;
+
 class Serializator
 {
 public:
-    bool LoadData(const std::string& filename);
-    bool SaveData(const std::string& filename) const;
-    ListNode* GetHead() const;
+    explicit Serializator(const std::string& in_file_name, const std::string& out_file_name);
+    ~Serializator();
+    ListNode* GetRoot() const;
 
 private:
-    std::unordered_map<int, std::vector<ListNode*>> links_;
+    NodeWithRandomPosition ParceLine(std::string &line, ListNode* prev_node);
+
+    void LoadData(const std::string& file_name);
+    bool SaveData(const std::string& file_name) const;
+
+    void MakeLinks(const std::vector<NodeWithRandomPosition> links);
+
     ListNode* head_ = nullptr;
 };
