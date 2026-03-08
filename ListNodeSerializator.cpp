@@ -26,14 +26,14 @@ std::pair<ListNode*, int> Serializator::ParceLine(std::string &line, ListNode *p
     return std::make_pair(node, number_rand_node);
 }
 
-void Serializator::LoadData(const std::string &file_name)
+bool Serializator::LoadData(const std::string &file_name)
 {
     std::ifstream in_file(file_name);
     std::string line;
 
     if (!in_file.is_open())
     {
-        return;
+        return false;
     }
 
     std::vector<NodeWithRandomPosition> links;
@@ -55,6 +55,8 @@ void Serializator::LoadData(const std::string &file_name)
     in_file.close();
 
     MakeLinks(links);
+
+    return true;
 }
 
 void Serializator::MakeLinks(const std::vector<NodeWithRandomPosition> links)
@@ -77,10 +79,23 @@ ListNode *Serializator::GetRoot() const
 
 Serializator::Serializator(const std::string &in_file_name, const std::string &out_file_name)
 {
-    LoadData(in_file_name);
-    SaveData(out_file_name);
-    // запуск load
-    // сохранить
+    if (in_file_name.empty() || out_file_name.empty())
+    {
+        std::cout << "Imena failov ne dolgny byt' pusty!";
+        return;
+    }
+
+    if (!LoadData(in_file_name))
+    {
+        std::cout << "Oshibka otkrytiya vhodnogo faila!";
+        return;
+    }
+
+    if (!    SaveData(out_file_name))
+    {
+        std::cout << "Oshibka otkrytiya vyhodnogo faila!";
+        return;
+    }
 }
 
 Serializator::~Serializator()
@@ -97,5 +112,30 @@ Serializator::~Serializator()
 bool Serializator::SaveData(const std::string &file_name) const
 {
     // сохранить
+    std::ofstream out_file(file_name, std::ios::binary);
+
+    if (!out_file.is_open())
+    {
+        return false;
+    }
+
+    auto curr_node = head_;
+
+    while (curr_node != nullptr)
+    {
+        // честно признаться, с точки зрения логики и восстановления списка
+        // я не вижу смысла писать в файл ...->prev и ...->next, а rand это должен быть
+        // тот же номер элемента в списке, как и во входном файле
+        out_file.write(reinterpret_cast<char*>(curr_node->prev), sizeof(curr_node->prev));
+        out_file.write(reinterpret_cast<char*>(curr_node->next), sizeof(curr_node->next));
+        out_file.write(reinterpret_cast<char*>(curr_node->rand), sizeof(curr_node->rand));
+
+        // определяем и пишем длину строки для восстановления, чтобы не писать везеде одинаково 1000 символов, но можно и так, заполнив сдачу "нулями"
+        size_t length = curr_node->data.size();
+        out_file.write(reinterpret_cast<char*>(&length), sizeof(length));
+        out_file.write((char*)curr_node->data.c_str(), length);
+    }
+    out_file.close();
+    return true;
 }
 

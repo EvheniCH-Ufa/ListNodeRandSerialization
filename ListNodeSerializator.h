@@ -23,7 +23,7 @@ public:
 private:
     NodeWithRandomPosition ParceLine(std::string &line, ListNode* prev_node);
 
-    void LoadData(const std::string& file_name);
+    bool LoadData(const std::string& file_name);
     bool SaveData(const std::string& file_name) const;
 
     void MakeLinks(const std::vector<NodeWithRandomPosition> links);
