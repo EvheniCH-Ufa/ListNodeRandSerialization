@@ -81,21 +81,24 @@ Serializator::Serializator(const std::string &in_file_name, const std::string &o
 {
     if (in_file_name.empty() || out_file_name.empty())
     {
-        std::cout << "Imena failov ne dolgny byt' pusty!";
+        std::cout << "Imena failov ne dolgny byt' pusty!\n";
         return;
     }
 
+    std::cout << "In load!\n";
     if (!LoadData(in_file_name))
     {
-        std::cout << "Oshibka otkrytiya vhodnogo faila!";
+        std::cout << "Oshibka otkrytiya vhodnogo faila!\n";
         return;
     }
 
-    if (!    SaveData(out_file_name))
+    std::cout << "In save!\n";
+    if (!SaveData(out_file_name))
     {
-        std::cout << "Oshibka otkrytiya vyhodnogo faila!";
+        std::cout << "Oshibka otkrytiya vyhodnogo faila!\n";
         return;
     }
+    std::cout << "Save is done!\n";
 }
 
 Serializator::~Serializator()
@@ -116,8 +119,11 @@ bool Serializator::SaveData(const std::string &file_name) const
 
     if (!out_file.is_open())
     {
+        std::cout << "Out not open!\n";
         return false;
     }
+
+    std::cout << "Out open!\n";
 
     auto curr_node = head_;
 
@@ -126,14 +132,17 @@ bool Serializator::SaveData(const std::string &file_name) const
         // честно признаться, с точки зрения логики и восстановления списка
         // я не вижу смысла писать в файл ...->prev и ...->next, а rand это должен быть
         // тот же номер элемента в списке, как и во входном файле
-        out_file.write(reinterpret_cast<char*>(curr_node->prev), sizeof(curr_node->prev));
-        out_file.write(reinterpret_cast<char*>(curr_node->next), sizeof(curr_node->next));
-        out_file.write(reinterpret_cast<char*>(curr_node->rand), sizeof(curr_node->rand));
+        out_file.write(reinterpret_cast<char*>(&curr_node->prev), sizeof(curr_node->prev));
+        out_file.write(reinterpret_cast<char*>(&curr_node->next), sizeof(curr_node->next));
+        out_file.write(reinterpret_cast<char*>(&curr_node->rand), sizeof(curr_node->rand));
 
         // определяем и пишем длину строки для восстановления, чтобы не писать везеде одинаково 1000 символов, но можно и так, заполнив сдачу "нулями"
         size_t length = curr_node->data.size();
         out_file.write(reinterpret_cast<char*>(&length), sizeof(length));
         out_file.write((char*)curr_node->data.c_str(), length);
+
+        std::cout << curr_node->data << std::endl;
+        curr_node = curr_node->next;
     }
     out_file.close();
     return true;
