@@ -68,11 +68,10 @@ void Serializator::MakeLinks(const std::vector<NodeWithRandomPosition> links)
 {
     for(const auto [node, rand_pos] : links)
     {
-        if (rand_pos < 0)
+        if (rand_pos < 0 && rand_pos > static_cast<int>(links.size()))
         {
             continue;
         }
-
         node->rand = links[rand_pos].first;
     }
 }
@@ -90,14 +89,12 @@ Serializator::Serializator(const std::string &in_file_name, const std::string &o
         return;
     }
 
-    std::cout << "In load!\n";
     if (!LoadData(in_file_name))
     {
         std::cout << "Oshibka otkrytiya vhodnogo faila!\n";
         return;
     }
 
-    std::cout << "In save!\n";
     if (!SaveData(out_file_name))
     {
         std::cout << "Oshibka otkrytiya vyhodnogo faila!\n";
@@ -127,8 +124,6 @@ bool Serializator::SaveData(const std::string &file_name) const
         std::cout << "Out not open!\n";
         return false;
     }
-
-    std::cout << "Out open!\n";
 
     auto curr_node = head_;
 
