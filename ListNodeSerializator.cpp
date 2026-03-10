@@ -40,6 +40,8 @@ bool Serializator::LoadData(const std::string &file_name)
 
     ListNode* curr_node = head_;
 
+
+    int index = 0;
     while (getline(in_file, line))
     {
         auto res_parce = ParceLine(line, curr_node);
@@ -51,6 +53,9 @@ bool Serializator::LoadData(const std::string &file_name)
         }
 
         links.push_back(res_parce);
+        links_.insert({res_parce.first, index});
+
+        ++index;
     }
     in_file.close();
 
@@ -132,16 +137,30 @@ bool Serializator::SaveData(const std::string &file_name) const
         // честно признаться, с точки зрения логики и восстановления списка
         // я не вижу смысла писать в файл ...->prev и ...->next, а rand это должен быть
         // тот же номер элемента в списке, как и во входном файле
-        out_file.write(reinterpret_cast<char*>(&curr_node->prev), sizeof(curr_node->prev));
-        out_file.write(reinterpret_cast<char*>(&curr_node->next), sizeof(curr_node->next));
-        out_file.write(reinterpret_cast<char*>(&curr_node->rand), sizeof(curr_node->rand));
+        // поэтому это все комментим
+        //out_file.write(reinterpret_cast<char*>(&curr_node->prev), sizeof(curr_node->prev));
+        //out_file.write(reinterpret_cast<char*>(&curr_node->next), sizeof(curr_node->next));
+        //out_file.write(reinterpret_cast<char*>(&curr_node->rand), sizeof(curr_node->rand));
 
-        // определяем и пишем длину строки для восстановления, чтобы не писать везеде одинаково 1000 символов, но можно и так, заполнив сдачу "нулями"
+        // определяем и пишем длину строки для восстановления,
+        // чтобы не писать везеде одинаково 1000 символов, заполнив сдачу "нулями"
         size_t length = curr_node->data.size();
         out_file.write(reinterpret_cast<char*>(&length), sizeof(length));
         out_file.write((char*)curr_node->data.c_str(), length);
 
-        std::cout << curr_node->data << std::endl;
+        // наодим в мапе по адресу ссылку на номер элемента ранд
+        // и записываем его. Примерно так как это было изначально, если не втыкались другие элементы
+        int index = -1;
+        if (curr_node->rand != nullptr)
+        {
+            const auto it_find = links_.find(curr_node->rand);
+            if (it_find != links_.end())
+            {
+                index = it_find->second;
+            }
+        }
+        out_file.write(reinterpret_cast<char*>(&index), sizeof(index));
+
         curr_node = curr_node->next;
     }
     out_file.close();

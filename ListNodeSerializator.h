@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 
 struct ListNode
@@ -29,4 +30,5 @@ private:
     void MakeLinks(const std::vector<NodeWithRandomPosition> links);
 
     ListNode* head_ = nullptr;
+    std::unordered_map<ListNode*, int> links_;
 };
